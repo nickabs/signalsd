@@ -1041,25 +1041,19 @@ const docTemplate = `{
                         "description": "No Content"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request with possible error codes: malformed_body, password_too_short",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                        "description": "Unauthorized with possible error code: authentication_error",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error with possible error codes: database_error, internal_error",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
@@ -1073,7 +1067,7 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Create user",
+                "summary": "Register user",
                 "parameters": [
                     {
                         "description": "user details",
@@ -1090,19 +1084,19 @@ const docTemplate = `{
                         "description": "Created"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request with possible error codes: malformed_body, password_too_short",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "Conflict with possible error code:resource_already_exists",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error with possible error codes: database_error, internal_error",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
@@ -2092,7 +2086,8 @@ const docTemplate = `{
                     "example": "example_error_code"
                 },
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "message describing the error"
                 }
             }
         }

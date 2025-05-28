@@ -44,17 +44,18 @@ type UpdatePasswordRequest struct {
 
 // RegisterUserHandler godoc
 //
-//	@Summary		Create user
+//	@Summary		Register user
 //	@Tags			auth
 //
 //	@Param			request	body	handlers.CreateUserRequest	true	"user details"
 //	@Description	The first user to be created for this service will be created with an admin role.
-//	@Description	Subsequent accounts default to standard user roles.
+//	@Description	Subsequent accounts default to standard member roles.
+//	@Description	New members can't access any information beyond the public data on the site until an admin grants them access to an ISN.
 //
 //	@Success		201
-//	@Failure		400	{object}	utils.ErrorResponse
-//	@Failure		409	{object}	utils.ErrorResponse
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Failure		400	{object}	utils.ErrorResponse "Bad request with possible error codes: malformed_body, password_too_short"
+//	@Failure		409	{object}	utils.ErrorResponse "Conflict with possible error code:resource_already_exists"
+//	@Failure		500	{object}	utils.ErrorResponse "Internal server error with possible error codes: database_error, internal_error"
 //
 //	@Router			/auth/register [post]
 func (u *UserHandler) RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -152,10 +153,9 @@ func (u *UserHandler) RegisterUserHandler(w http.ResponseWriter, r *http.Request
 //
 //	@Param			request	body	handlers.UpdatePasswordRequest	true	"user details"
 //	@Success		204
-//	@Failure		400	{object}	utils.ErrorResponse
-//	@Failure		401	{object}	utils.ErrorResponse
-//	@Failure		404	{object}	utils.ErrorResponse
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Failure		400	{object}	utils.ErrorResponse "Bad request with possible error codes: malformed_body, password_too_short"
+//	@Failure		401	{object}	utils.ErrorResponse "Unauthorized with possible error code: authentication_error"
+//	@Failure		500	{object}	utils.ErrorResponse "Internal server error with possible error codes: database_error, internal_error"
 //
 //	@Security		BearerAccessToken
 //
