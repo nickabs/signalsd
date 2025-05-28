@@ -49,14 +49,14 @@ type CreateSignalsBatchResponse struct {
 //	@Description	authentication is based on the supplied access token:
 //	@Description	(the site owner; the isn admin and members with an isn_perm= write can create a batch)
 //	@Description
-//	@Tags			Signals Management
+//	@Tags		Signals Management
 //
-//	@Success		201	{object}	CreateSignalsBatchResponse
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Success	201	{object}	CreateSignalsBatchResponse
+//	@Failure	500	{object}	utils.ErrorResponse
 //
-//	@Security		BearerAccessToken
+//	@Security	BearerAccessToken
 //
-//	@Router			/api/isn/{isn_slug}/signals/batches [post]
+//	@Router		/api/isn/{isn_slug}/signals/batches [post]
 //
 // CreateSignalsBatchHandler must be used with the RequireValidAccessToken amd RequireIsnWritePermission middleware functions
 func (s *SignalsBatchHandler) CreateSignalsBatchHandler(w http.ResponseWriter, r *http.Request) {

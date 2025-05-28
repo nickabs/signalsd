@@ -46,7 +46,7 @@ func (a AuthService) RequireValidAccessToken(next http.Handler) http.Handler {
 		accountIDString := claims.Subject
 		accountID, err := uuid.Parse(accountIDString)
 		if err != nil {
-			utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeTokenError, fmt.Sprintf("signed jwt received without a valid accountID in sub: %v", err))
+			utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeTokenInvalid, fmt.Sprintf("signed jwt received without a valid accountID in sub: %v", err))
 			return
 		}
 

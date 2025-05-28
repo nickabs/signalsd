@@ -16,10 +16,7 @@ definitions:
     - refresh_token_invalid
     - resource_already_exists
     - resource_not_found
-    - signal_type_closed
-    - token_error
-    - user_alread_exists
-    - user_not_found
+    - token_invalid
     type: string
     x-enum-varnames:
     - ErrCodeAccessTokenExpired
@@ -35,10 +32,7 @@ definitions:
     - ErrCodeRefreshTokenInvalid
     - ErrCodeResourceAlreadyExists
     - ErrCodeResourceNotFound
-    - ErrCodeSignalTypeClosed
-    - ErrCodeTokenError
-    - ErrCodeUserAlreadyExists
-    - ErrCodeUserNotFound
+    - ErrCodeTokenInvalid
   auth.AccessTokenResponse:
     properties:
       access_token:

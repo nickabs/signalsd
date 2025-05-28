@@ -26,6 +26,14 @@ type AuthService struct {
 	queries     *database.Queries
 }
 
+func NewAuthService(secretKey string, environment string, queries *database.Queries) *AuthService {
+	return &AuthService{
+		secretKey:   secretKey,
+		environment: environment,
+		queries:     queries,
+	}
+}
+
 type AccessTokenResponse struct {
 	AccessToken string            `json:"access_token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJTaWduYWxTZXJ2ZXIiLCJzdWIiOiI2OGZiNWY1Yi1lM2Y1LTRhOTYtOGQzNS1jZDIyMDNhMDZmNzMiLCJleHAiOjE3NDY3NzA2MzQsImlhdCI6MTc0Njc2NzAzNH0.3OdnUNgrvt1Zxs9AlLeaC9DVT6Xwc6uGvFQHb6nDfZs"`
 	TokenType   string            `json:"token_type" example:"Bearer"`
@@ -42,14 +50,6 @@ type AccessTokenClaims struct {
 	AccountType string            `json:"account_type" enums:"user,service_identity"`
 	Role        string            `json:"role" enums:"owner,admin,member" example:"admin"`
 	IsnPerms    map[string]string `json:"isn_perms,omitempty"`
-}
-
-func NewAuthService(secretKey string, environment string, queries *database.Queries) *AuthService {
-	return &AuthService{
-		secretKey:   secretKey,
-		environment: environment,
-		queries:     queries,
-	}
 }
 
 func (a AuthService) HashPassword(password string) (string, error) {

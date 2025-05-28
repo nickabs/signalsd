@@ -1328,10 +1328,7 @@ const docTemplate = `{
                 "refresh_token_invalid",
                 "resource_already_exists",
                 "resource_not_found",
-                "signal_type_closed",
-                "token_error",
-                "user_alread_exists",
-                "user_not_found"
+                "token_invalid"
             ],
             "x-enum-varnames": [
                 "ErrCodeAccessTokenExpired",
@@ -1347,10 +1344,7 @@ const docTemplate = `{
                 "ErrCodeRefreshTokenInvalid",
                 "ErrCodeResourceAlreadyExists",
                 "ErrCodeResourceNotFound",
-                "ErrCodeSignalTypeClosed",
-                "ErrCodeTokenError",
-                "ErrCodeUserAlreadyExists",
-                "ErrCodeUserNotFound"
+                "ErrCodeTokenInvalid"
             ]
         },
         "auth.AccessTokenResponse": {

@@ -78,7 +78,7 @@ func (u *UserHandler) RegisterUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 	if exists {
-		utils.RespondWithError(w, r, http.StatusConflict, apperrors.ErrCodeUserAlreadyExists, "a user already exists this email address")
+		utils.RespondWithError(w, r, http.StatusConflict, apperrors.ErrCodeResourceAlreadyExists, "a user already exists this email address")
 		return
 	}
 

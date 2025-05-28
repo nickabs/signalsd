@@ -146,19 +146,19 @@ func (i *IsnRetrieverHandler) CreateIsnRetrieverHandler(w http.ResponseWriter, r
 //	@Description
 //	@Description	This endpoint can only be used by the site owner or the ISN admin
 //
-//	@Tags		ISN config
+//	@Tags			ISN config
 //
-//	@Param		isn_slug	path	string								true	"isn slug"	example(sample-isn--example-org)
-//	@Param		request		body	handlers.UpdateIsnRetrieverRequest	true	"ISN retriever details"
+//	@Param			isn_slug	path	string								true	"isn slug"	example(sample-isn--example-org)
+//	@Param			request		body	handlers.UpdateIsnRetrieverRequest	true	"ISN retriever details"
 //
-//	@Success	204
-//	@Failure	400	{object}	utils.ErrorResponse
-//	@Failure	401	{object}	utils.ErrorResponse
-//	@Failure	500	{object}	utils.ErrorResponse
+//	@Success		204
+//	@Failure		400	{object}	utils.ErrorResponse
+//	@Failure		401	{object}	utils.ErrorResponse
+//	@Failure		500	{object}	utils.ErrorResponse
 //
-//	@Security	BearerAccessToken
+//	@Security		BearerAccessToken
 //
-//	@Router		/api/isn/{isn_slug}/signals/retriever [put]
+//	@Router			/api/isn/{isn_slug}/signals/retriever [put]
 func (i *IsnRetrieverHandler) UpdateIsnRetrieverHandler(w http.ResponseWriter, r *http.Request) {
 	var req UpdateIsnRetrieverRequest
 

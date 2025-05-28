@@ -69,7 +69,7 @@ func (l *LoginHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !exists {
-		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeUserNotFound, "no user found with this email address")
+		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeResourceNotFound, "no user found with this email address")
 		return
 	}
 
@@ -90,14 +90,14 @@ func (l *LoginHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	accessTokenResponse, err := l.authService.BuildAccessTokenResponse(ctx)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeTokenError, fmt.Sprintf("error creating access token: %v", err))
+		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeTokenInvalid, fmt.Sprintf("error creating access token: %v", err))
 		return
 	}
 
 	// new refresh token
 	refreshToken, err := l.authService.RotateRefreshToken(ctx)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeTokenError, fmt.Sprintf("error creating refresh token: %v", err))
+		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeTokenInvalid, fmt.Sprintf("error creating refresh token: %v", err))
 		return
 	}
 
