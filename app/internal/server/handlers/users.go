@@ -53,9 +53,9 @@ type UpdatePasswordRequest struct {
 //	@Description	New members can't access any information beyond the public data on the site until an admin grants them access to an ISN.
 //
 //	@Success		201
-//	@Failure		400	{object}	utils.ErrorResponse "Bad request with possible error codes: malformed_body, password_too_short"
-//	@Failure		409	{object}	utils.ErrorResponse "Conflict with possible error code:resource_already_exists"
-//	@Failure		500	{object}	utils.ErrorResponse "Internal server error with possible error codes: database_error, internal_error"
+//	@Failure		400	{object}	responses.ErrorResponse "Bad request with possible error codes: malformed_body, password_too_short"
+//	@Failure		409	{object}	responses.ErrorResponse "Conflict with possible error code:resource_already_exists"
+//	@Failure		500	{object}	responses.ErrorResponse "Internal server error with possible error codes: database_error, internal_error"
 //
 //	@Router			/auth/register [post]
 func (u *UserHandler) RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -153,9 +153,9 @@ func (u *UserHandler) RegisterUserHandler(w http.ResponseWriter, r *http.Request
 //
 //	@Param			request	body	handlers.UpdatePasswordRequest	true	"user details"
 //	@Success		204
-//	@Failure		400	{object}	utils.ErrorResponse "Bad request with possible error codes: malformed_body, password_too_short"
-//	@Failure		401	{object}	utils.ErrorResponse "Unauthorized with possible error code: authentication_error"
-//	@Failure		500	{object}	utils.ErrorResponse "Internal server error with possible error codes: database_error, internal_error"
+//	@Failure		400	{object}	responses.ErrorResponse "Bad request with possible error codes: malformed_body, password_too_short"
+//	@Failure		401	{object}	responses.ErrorResponse "Unauthorized with possible error code: authentication_error"
+//	@Failure		500	{object}	responses.ErrorResponse "Internal server error with possible error codes: database_error, internal_error"
 //
 //	@Security		BearerAccessToken
 //
@@ -248,9 +248,9 @@ func (u *UserHandler) UpdatePasswordHandler(w http.ResponseWriter, r *http.Reque
 //	@Param			account_id	path		string	true	"account id"	example(a38c99ed-c75c-4a4a-a901-c9485cf93cf3)
 //
 //	@Success		204
-//	@Failure		400			{object}	utils.ErrorResponse
-//	@Failure		403			{object}	utils.ErrorResponse
-//	@Failure		500			{object}	utils.ErrorResponse
+//	@Failure		400			{object}	responses.ErrorResponse
+//	@Failure		403			{object}	responses.ErrorResponse
+//	@Failure		500			{object}	responses.ErrorResponse
 //
 //	@Security		BearerAccessToken
 //
@@ -317,7 +317,7 @@ func (u *UserHandler) GrantUserAdminRoleHandler(w http.ResponseWriter, r *http.R
 //	@Param			account_id	path		string	true	"account id"	example(a38c99ed-c75c-4a4a-a901-c9485cf93cf3)
 //
 //	@Success		204
-//	@Failure		500			{object}	utils.ErrorResponse
+//	@Failure		500			{object}	responses.ErrorResponse
 //
 //	@Security		BearerAccessToken
 //
@@ -381,7 +381,7 @@ func (u *UserHandler) RevokeUserAdminRoleHandler(w http.ResponseWriter, r *http.
 //
 //	@Param			id	path		string	true	"user id"	example(68fb5f5b-e3f5-4a96-8d35-cd2203a06f73)
 //	@Success		200	{array}		database.GetUserByIDRow
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Failure		500	{object}	responses.ErrorResponse
 //
 //	@Router			/admin/users/{id} [get]
 func (u *UserHandler) GetUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -413,7 +413,7 @@ func (u *UserHandler) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 //	@Tags			auth
 //
 //	@Success		200	{array}		database.GetUsersRow
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Failure		500	{object}	responses.ErrorResponse
 //
 //	@Router			/api/users [get]
 func (u *UserHandler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {

@@ -66,9 +66,9 @@ type UpdateIsnReceiverRequest struct {
 //	@Param			request		body		handlers.CreateIsnReceiverRequest	true	"ISN receiver details"
 //
 //	@Success		201			{object}	handlers.CreateIsnReceiverResponse
-//	@Failure		400			{object}	utils.ErrorResponse
-//	@Failure		409			{object}	utils.ErrorResponse
-//	@Failure		500			{object}	utils.ErrorResponse
+//	@Failure		400			{object}	responses.ErrorResponse
+//	@Failure		409			{object}	responses.ErrorResponse
+//	@Failure		500			{object}	responses.ErrorResponse
 //
 //	@Security		BearerAccessToken
 //
@@ -170,9 +170,9 @@ func (i *IsnReceiverHandler) CreateIsnReceiverHandler(w http.ResponseWriter, r *
 //	@Param			request		body	handlers.UpdateIsnReceiverRequest	true	"ISN receiver details"
 //
 //	@Success		204
-//	@Failure		400	{object}	utils.ErrorResponse
-//	@Failure		401	{object}	utils.ErrorResponse
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Failure		400	{object}	responses.ErrorResponse
+//	@Failure		401	{object}	responses.ErrorResponse
+//	@Failure		500	{object}	responses.ErrorResponse
 //
 //	@Security		BearerAccessToken
 //
@@ -281,7 +281,7 @@ func (i *IsnReceiverHandler) UpdateIsnReceiverHandler(w http.ResponseWriter, r *
 //
 //	@Param		slug	path		string	true	"isn slug"	example(sample-isn--example-org)
 //	@Success	200		{array}		database.GetIsnReceiverByIsnSlugRow
-//	@Failure	500		{object}	utils.ErrorResponse
+//	@Failure	500		{object}	responses.ErrorResponse
 //
 //	@Router		/api/isn/{isn_slug}/signals/receiver [get]
 func (u *IsnReceiverHandler) GetIsnReceiverHandler(w http.ResponseWriter, r *http.Request) {

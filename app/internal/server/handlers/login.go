@@ -47,9 +47,9 @@ type LoginRequest struct {
 //	@Example		value { "access_token": "abc...", "token_type": "Bearer", "expires_in": 1800, "role": "member", "isn_perms": { "isn-slug-1": "write", "isn-slug-2": "read" } }
 //
 //	@Success		200	{object}	auth.AccessTokenResponse
-//	@Failure		400	{object}	utils.ErrorResponse
-//	@Failure		401	{object}	utils.ErrorResponse
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Failure		400	{object}	responses.ErrorResponse
+//	@Failure		401	{object}	responses.ErrorResponse
+//	@Failure		500	{object}	responses.ErrorResponse
 //
 //	@Router			/auth/login [post]
 func (l *LoginHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {

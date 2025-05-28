@@ -40,8 +40,8 @@ type GrantIsnAccountPermissionRequest struct {
 //	@Param			account_id	path	string	true	"account id"	example(a38c99ed-c75c-4a4a-a901-c9485cf93cf3)
 //
 //	@Success		204
-//	@Failure		400	{object}	utils.ErrorResponse
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Failure		400	{object}	responses.ErrorResponse
+//	@Failure		500	{object}	responses.ErrorResponse
 //
 //	@Security		BearerAccessToken
 //
@@ -199,8 +199,8 @@ func (i *IsnAccountHandler) GrantIsnAccountHandler(w http.ResponseWriter, r *htt
 //	@Param			account_id	path	string	true	"account id"	example(a38c99ed-c75c-4a4a-a901-c9485cf93cf3)
 //
 //	@Success		204
-//	@Failure		400	{object}	utils.ErrorResponse
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Failure		400	{object}	responses.ErrorResponse
+//	@Failure		500	{object}	responses.ErrorResponse
 //
 //	@Security		BearerAccessToken
 //

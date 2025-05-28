@@ -60,9 +60,9 @@ type UpdateIsnRetrieverRequest struct {
 //	@Param			request		body		handlers.CreateIsnRetrieverRequest	true	"ISN retriever details"
 //
 //	@Success		201			{object}	handlers.CreateIsnRetrieverResponse
-//	@Failure		400			{object}	utils.ErrorResponse
-//	@Failure		409			{object}	utils.ErrorResponse
-//	@Failure		500			{object}	utils.ErrorResponse
+//	@Failure		400			{object}	responses.ErrorResponse
+//	@Failure		409			{object}	responses.ErrorResponse
+//	@Failure		500			{object}	responses.ErrorResponse
 //
 //	@Security		BearerAccessToken
 //
@@ -153,9 +153,9 @@ func (i *IsnRetrieverHandler) CreateIsnRetrieverHandler(w http.ResponseWriter, r
 //	@Param			request		body	handlers.UpdateIsnRetrieverRequest	true	"ISN retriever details"
 //
 //	@Success		204
-//	@Failure		400	{object}	utils.ErrorResponse
-//	@Failure		401	{object}	utils.ErrorResponse
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Failure		400	{object}	responses.ErrorResponse
+//	@Failure		401	{object}	responses.ErrorResponse
+//	@Failure		500	{object}	responses.ErrorResponse
 //
 //	@Security		BearerAccessToken
 //
@@ -248,7 +248,7 @@ func (i *IsnRetrieverHandler) UpdateIsnRetrieverHandler(w http.ResponseWriter, r
 //
 //	@Param		slug	path		string	true	"isn slug"	example(sample-isn--example-org)
 //	@Success	200		{array}		database.GetIsnRetrieverByIsnSlugRow
-//	@Failure	500		{object}	utils.ErrorResponse
+//	@Failure	500		{object}	responses.ErrorResponse
 //
 //	@Router		/api/isn/{isn_slug}/signals/retriever [get]
 func (u *IsnRetrieverHandler) GetIsnRetrieverHandler(w http.ResponseWriter, r *http.Request) {

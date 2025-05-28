@@ -27,8 +27,8 @@ func NewAdminHandler(queries *database.Queries) *AdminHandler {
 //	@Tags			Site admin
 //
 //	@Success		200
-//	@Failure		403	{object}	utils.ErrorResponse
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Failure		403	{object}	responses.ErrorResponse
+//	@Failure		500	{object}	responses.ErrorResponse
 //
 //	@Router			/admin/reset [post]
 func (a *AdminHandler) ResetHandler(w http.ResponseWriter, r *http.Request) {

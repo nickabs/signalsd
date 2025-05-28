@@ -53,7 +53,7 @@ type CreateSignalsBatchResponse struct {
 //	@Tags		Signals Management
 //
 //	@Success	201	{object}	CreateSignalsBatchResponse
-//	@Failure	500	{object}	utils.ErrorResponse
+//	@Failure	500	{object}	responses.ErrorResponse
 //
 //	@Security	BearerAccessToken
 //

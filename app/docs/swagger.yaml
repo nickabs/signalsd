@@ -547,7 +547,7 @@ definitions:
         - shuttered
         type: string
     type: object
-  utils.ErrorResponse:
+  responses.ErrorResponse:
     properties:
       error_code:
         allOf:
@@ -584,11 +584,11 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: reset
       tags:
       - Site admin
@@ -613,7 +613,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Get registered user
       tags:
       - auth
@@ -630,7 +630,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Get the ISNs
       tags:
       - ISN view
@@ -661,15 +661,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       - RefreshTokenCookieAuth: []
@@ -699,15 +699,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Update an ISN
@@ -725,7 +725,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Get the signal definitions
       tags:
       - ISN view
@@ -754,15 +754,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Create signal definition
@@ -789,15 +789,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Delete signal definition
@@ -825,15 +825,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Get a signal definition
       tags:
       - ISN view
@@ -867,15 +867,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Update signal definition
@@ -922,7 +922,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Create a new signal batch
@@ -947,7 +947,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Get an ISN receiver config
       tags:
       - ISN view
@@ -984,15 +984,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Create an ISN Receiver definition
@@ -1019,15 +1019,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Update an ISN Receiver
@@ -1052,7 +1052,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Get an ISN retriever config
       tags:
       - ISN view
@@ -1089,15 +1089,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Create an ISN Retriever definition
@@ -1124,15 +1124,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Update an ISN Retriever
@@ -1156,15 +1156,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Get an ISN configuration
       tags:
       - ISN view
@@ -1182,7 +1182,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Get the registered users
       tags:
       - auth
@@ -1202,7 +1202,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Revoke account admin role
@@ -1234,15 +1234,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Grant admin role
@@ -1273,15 +1273,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Login
       tags:
       - auth
@@ -1304,16 +1304,16 @@ paths:
         "400":
           description: 'Bad request with possible error codes: malformed_body, password_too_short'
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: 'Unauthorized with possible error code: authentication_error'
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: 'Internal server error with possible error codes: database_error,
             internal_error'
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Reset password
@@ -1323,7 +1323,8 @@ paths:
     post:
       description: |-
         The first user to be created for this service will be created with an admin role.
-        Subsequent accounts default to standard user roles.
+        Subsequent accounts default to standard member roles.
+        New members can't access any information beyond the public data on the site until an admin grants them access to an ISN.
       parameters:
       - description: user details
         in: body
@@ -1337,16 +1338,16 @@ paths:
         "400":
           description: 'Bad request with possible error codes: malformed_body, password_too_short'
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "409":
           description: Conflict with possible error code:resource_already_exists
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: 'Internal server error with possible error codes: database_error,
             internal_error'
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Register user
       tags:
       - auth
@@ -1370,15 +1371,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerRefreshToken: []
       summary: Revoke refresh token
@@ -1410,15 +1411,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerRefreshToken: []
       summary: Refresh access token
@@ -1459,11 +1460,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Revoke ISN access permission
@@ -1492,16 +1493,36 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       security:
       - BearerAccessToken: []
       summary: Grant ISN access permission
       tags:
       - ISN Permissions
+  /signals:
+    post:
+      description: |-
+        Register a signal to recieve signals batch status updates
+        - the client can submit arrays of signals for a single type in a single req (subject to the size
+        limits defined on the signal type definition)
+        - The client-supplied local_ref must uniquely identify each signal of the
+        specified signal type that will be supplied by the account.
+        - If a local reference is received more than once from an account for a
+        specified signal_type it will be stored with a incremented version number
+        and the previous version will be marked as latest=false (it does not matter
+        if the previous signal was received in a different batch, but the signal must
+        be owned by the same account).
+        - If a deletion request is received, all version of the signal will be marked
+        as 'withdrawn'.
+        - Correlation_ids are auto generated on the server unless supplied by the client, in which case they are used to identify another signal that this signal is related to. The correlated signal does not need to be owned by the same account.
+      responses: {}
+      summary: send one or more signals
+      tags:
+      - Signals Management
   /webhooks:
     post:
       description: TODO - register a webhook to recieve signals batch status updates

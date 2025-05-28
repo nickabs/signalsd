@@ -69,9 +69,9 @@ type SignalTypeAndLinkedInfo struct {
 //	@Param		request	body		handlers.CreateSignalTypeRequest	true	"signal definition details"
 //
 //	@Success	201		{object}	handlers.CreateSignalTypeResponse
-//	@Failure	400		{object}	utils.ErrorResponse
-//	@Failure	409		{object}	utils.ErrorResponse
-//	@Failure	500		{object}	utils.ErrorResponse
+//	@Failure	400		{object}	responses.ErrorResponse
+//	@Failure	409		{object}	responses.ErrorResponse
+//	@Failure	500		{object}	responses.ErrorResponse
 //
 //	@Security	BearerAccessToken
 //
@@ -230,9 +230,9 @@ func (s *SignalTypeHandler) CreateSignalTypeHandler(w http.ResponseWriter, r *ht
 //	@Tags			signal config
 //
 //	@Success		204
-//	@Failure		400	{object}	utils.ErrorResponse
-//	@Failure		401	{object}	utils.ErrorResponse
-//	@Failure		500	{object}	utils.ErrorResponse
+//	@Failure		400	{object}	responses.ErrorResponse
+//	@Failure		401	{object}	responses.ErrorResponse
+//	@Failure		500	{object}	responses.ErrorResponse
 //
 //	@Security		BearerAccessToken
 //
@@ -348,9 +348,9 @@ func (s *SignalTypeHandler) UpdateSignalTypeHandler(w http.ResponseWriter, r *ht
 //	@Param		sem_ver	path	string	true	"version to be recieved"	example(0.0.1)
 //
 //	@Success	204
-//	@Failure	400	{object}	utils.ErrorResponse
-//	@Failure	401	{object}	utils.ErrorResponse
-//	@Failure	500	{object}	utils.ErrorResponse
+//	@Failure	400	{object}	responses.ErrorResponse
+//	@Failure	401	{object}	responses.ErrorResponse
+//	@Failure	500	{object}	responses.ErrorResponse
 //
 //	@Security	BearerAccessToken
 //
@@ -422,9 +422,9 @@ func (s *SignalTypeHandler) DeleteSignalTypeHandler(w http.ResponseWriter, r *ht
 //	@Tags		ISN view
 //
 //	@Success	200	{object}	handlers.SignalTypeAndLinkedInfo
-//	@Failure	400	{object}	utils.ErrorResponse
-//	@Failure	404	{object}	utils.ErrorResponse
-//	@Failure	500	{object}	utils.ErrorResponse
+//	@Failure	400	{object}	responses.ErrorResponse
+//	@Failure	404	{object}	responses.ErrorResponse
+//	@Failure	500	{object}	responses.ErrorResponse
 //
 //	@Router		/api/isn/{isn_slug}/signal_types/{slug}/v{sem_ver} [get]
 func (s *SignalTypeHandler) GetSignalTypeHandler(w http.ResponseWriter, r *http.Request) {
@@ -465,7 +465,7 @@ func (s *SignalTypeHandler) GetSignalTypeHandler(w http.ResponseWriter, r *http.
 //	@Tags		ISN view
 //
 //	@Success	200	{array}		database.SignalType
-//	@Failure	500	{object}	utils.ErrorResponse
+//	@Failure	500	{object}	responses.ErrorResponse
 //
 //	@Router		/api/isn/{isn_slug}/signal_types [get]
 func (s *SignalTypeHandler) GetSignalTypesHandler(w http.ResponseWriter, r *http.Request) {

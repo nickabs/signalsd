@@ -49,9 +49,9 @@ func NewTokenHandler(queries *database.Queries, authService *auth.AuthService, e
 //	@Tags		auth
 //
 //	@Success	200	{object}	auth.AccessTokenResponse
-//	@Failure	400	{object}	utils.ErrorResponse
-//	@Failure	401	{object}	utils.ErrorResponse
-//	@Failure	500	{object}	utils.ErrorResponse
+//	@Failure	400	{object}	responses.ErrorResponse
+//	@Failure	401	{object}	responses.ErrorResponse
+//	@Failure	500	{object}	responses.ErrorResponse
 //
 //	@Security	BearerRefreshToken
 //
@@ -104,9 +104,9 @@ func (a *TokenHandler) RefreshAccessTokenHandler(w http.ResponseWriter, r *http.
 //	@Tags		auth
 //
 //	@Success	204
-//	@Failure	400	{object}	utils.ErrorResponse
-//	@Failure	404	{object}	utils.ErrorResponse
-//	@Failure	500	{object}	utils.ErrorResponse
+//	@Failure	400	{object}	responses.ErrorResponse
+//	@Failure	404	{object}	responses.ErrorResponse
+//	@Failure	500	{object}	responses.ErrorResponse
 //
 //	@Security	BearerRefreshToken
 //

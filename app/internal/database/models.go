@@ -93,7 +93,7 @@ type Signal struct {
 	IsLatest           bool            `json:"is_latest"`
 	IsWithdrawn        bool            `json:"is_withdrawn"`
 	IsArchived         bool            `json:"is_archived"`
-	JsonValidityStatus string          `json:"json_validity_status"`
+	JsonValidityStatus string          `json:"validation_status"`
 	JsonPayload        json.RawMessage `json:"json_payload"`
 }
 
