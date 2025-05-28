@@ -11,6 +11,7 @@ import (
 	"github.com/nickabs/signalsd/app/internal/apperrors"
 	"github.com/nickabs/signalsd/app/internal/auth"
 	"github.com/nickabs/signalsd/app/internal/database"
+	"github.com/nickabs/signalsd/app/internal/server/responses"
 	"github.com/nickabs/signalsd/app/internal/utils"
 
 	signalsd "github.com/nickabs/signalsd/app"
@@ -86,13 +87,13 @@ func (i *IsnHandler) CreateIsnHandler(w http.ResponseWriter, r *http.Request) {
 
 	userAccountID, ok := auth.ContextAccountID(r.Context())
 	if !ok {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "did not receive userAccountID from middleware")
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "did not receive userAccountID from middleware")
 		return
 	}
 	defer r.Body.Close()
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("could not decode request body: %v", err))
+		responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("could not decode request body: %v", err))
 		return
 	}
 
@@ -103,28 +104,28 @@ func (i *IsnHandler) CreateIsnHandler(w http.ResponseWriter, r *http.Request) {
 		req.Visibility == nil ||
 		req.StorageType == nil ||
 		req.StorageConnectionURL == nil {
-		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, "you have not supplied all the required fields in the payload")
+		responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, "you have not supplied all the required fields in the payload")
 		return
 	}
 
 	// generate slug and check it is not already in use
 	slug, err := utils.GenerateSlug(req.Title)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "could not create slug from title")
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "could not create slug from title")
 		return
 	}
 	exists, err := i.queries.ExistsIsnWithSlug(r.Context(), slug)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "database error")
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "database error")
 		return
 	}
 	if exists {
-		utils.RespondWithError(w, r, http.StatusConflict, apperrors.ErrCodeResourceAlreadyExists, fmt.Sprintf("the {%s} slug is already in use - pick a new title for your ISN", slug))
+		responses.RespondWithError(w, r, http.StatusConflict, apperrors.ErrCodeResourceAlreadyExists, fmt.Sprintf("the {%s} slug is already in use - pick a new title for your ISN", slug))
 		return
 	}
 
 	if !signalsd.ValidVisibilities[*req.Visibility] {
-		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("invalid visiblity value: %s", *req.Visibility))
+		responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("invalid visiblity value: %s", *req.Visibility))
 		return
 	}
 
@@ -143,7 +144,7 @@ func (i *IsnHandler) CreateIsnHandler(w http.ResponseWriter, r *http.Request) {
 		StorageConnectionURL: *req.StorageConnectionURL,
 	})
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not create ISN: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not create ISN: %v", err))
 		return
 	}
 
@@ -153,7 +154,7 @@ func (i *IsnHandler) CreateIsnHandler(w http.ResponseWriter, r *http.Request) {
 		slug,
 	)
 
-	utils.RespondWithJSON(w, http.StatusCreated, CreateIsnResponse{
+	responses.RespondWithJSON(w, http.StatusCreated, CreateIsnResponse{
 		ID:          returnedIsn.ID,
 		Slug:        returnedIsn.Slug,
 		ResourceURL: resourceURL,
@@ -186,7 +187,7 @@ func (i *IsnHandler) UpdateIsnHandler(w http.ResponseWriter, r *http.Request) {
 
 	userAccountID, ok := auth.ContextAccountID(r.Context())
 	if !ok {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "did not receive userAccountID from middleware")
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "did not receive userAccountID from middleware")
 		return
 	}
 
@@ -196,15 +197,15 @@ func (i *IsnHandler) UpdateIsnHandler(w http.ResponseWriter, r *http.Request) {
 	isn, err := i.queries.GetIsnBySlug(r.Context(), isnSlug)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			utils.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, "ISN not found")
+			responses.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, "ISN not found")
 			return
 		}
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error: %v", err))
 		return
 	}
 
 	if isn.UserAccountID != userAccountID {
-		utils.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "you are not the owner of this ISN")
+		responses.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "you are not the owner of this ISN")
 		return
 	}
 
@@ -213,7 +214,7 @@ func (i *IsnHandler) UpdateIsnHandler(w http.ResponseWriter, r *http.Request) {
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&req)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("could not decode request body: %v", err))
+		responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("could not decode request body: %v", err))
 		return
 	}
 
@@ -248,11 +249,11 @@ func (i *IsnHandler) UpdateIsnHandler(w http.ResponseWriter, r *http.Request) {
 		StorageConnectionURL: isn.StorageConnectionURL,
 	})
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not create ISN: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not create ISN: %v", err))
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusNoContent, "")
+	responses.RespondWithJSON(w, http.StatusNoContent, "")
 }
 
 // GetIsnsHandler godoc
@@ -269,10 +270,10 @@ func (s *IsnHandler) GetIsnsHandler(w http.ResponseWriter, r *http.Request) {
 
 	res, err := s.queries.GetIsns(r.Context())
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("error getting ISNs from database: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("error getting ISNs from database: %v", err))
 		return
 	}
-	utils.RespondWithJSON(w, http.StatusOK, res)
+	responses.RespondWithJSON(w, http.StatusOK, res)
 
 }
 
@@ -298,7 +299,7 @@ func (s *IsnHandler) GetIsnHandler(w http.ResponseWriter, r *http.Request) {
 	isn, err := s.queries.GetForDisplayIsnBySlug(r.Context(), slug)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			utils.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, fmt.Sprintf("No isn found for %s", slug))
+			responses.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, fmt.Sprintf("No isn found for %s", slug))
 			return
 		}
 	}
@@ -306,7 +307,7 @@ func (s *IsnHandler) GetIsnHandler(w http.ResponseWriter, r *http.Request) {
 	// get the owner of the isn
 	user, err := s.queries.GetForDisplayUserByIsnID(r.Context(), isn.ID)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("There was an error getting the user for this isn: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("There was an error getting the user for this isn: %v", err))
 		return
 	}
 
@@ -316,7 +317,7 @@ func (s *IsnHandler) GetIsnHandler(w http.ResponseWriter, r *http.Request) {
 	isnReceiver, err := s.queries.GetForDisplayIsnReceiverByIsnID(r.Context(), isn.ID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("There was an error getting the receiver for this isn: %v", err))
+			responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("There was an error getting the receiver for this isn: %v", err))
 			return
 		}
 	} else {
@@ -327,7 +328,7 @@ func (s *IsnHandler) GetIsnHandler(w http.ResponseWriter, r *http.Request) {
 	isnRetriever, err := s.queries.GetForDisplayIsnRetrieverByIsnID(r.Context(), isn.ID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("There was an error getting the retriever for this isn: %v", err))
+			responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("There was an error getting the retriever for this isn: %v", err))
 			return
 		}
 	} else {
@@ -340,5 +341,5 @@ func (s *IsnHandler) GetIsnHandler(w http.ResponseWriter, r *http.Request) {
 		IsnReceiver:               isnRetceiverRes,
 		IsnRetriever:              isnRetrieverRes,
 	}
-	utils.RespondWithJSON(w, http.StatusOK, res)
+	responses.RespondWithJSON(w, http.StatusOK, res)
 }

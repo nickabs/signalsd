@@ -8,7 +8,7 @@ import (
 
 	"github.com/nickabs/signalsd/app/internal/apperrors"
 	"github.com/nickabs/signalsd/app/internal/database"
-	"github.com/nickabs/signalsd/app/internal/utils"
+	"github.com/nickabs/signalsd/app/internal/server/responses"
 )
 
 type AdminHandler struct {
@@ -35,7 +35,7 @@ func (a *AdminHandler) ResetHandler(w http.ResponseWriter, r *http.Request) {
 
 	deletedAccountsCount, err := a.queries.DeleteAccounts(r.Context())
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not delete accounts: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not delete accounts: %v", err))
 		return
 	}
 	w.WriteHeader(http.StatusOK)

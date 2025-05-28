@@ -10,6 +10,7 @@ import (
 	"github.com/nickabs/signalsd/app/internal/apperrors"
 	"github.com/nickabs/signalsd/app/internal/auth"
 	"github.com/nickabs/signalsd/app/internal/database"
+	"github.com/nickabs/signalsd/app/internal/server/responses"
 	"github.com/nickabs/signalsd/app/internal/utils"
 
 	signalsd "github.com/nickabs/signalsd/app"
@@ -84,7 +85,7 @@ func (s *SignalTypeHandler) CreateSignalTypeHandler(w http.ResponseWriter, r *ht
 
 	userAccountID, ok := auth.ContextAccountID(r.Context())
 	if !ok {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "did not receive userAccountID from middleware")
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "did not receive userAccountID from middleware")
 		return
 	}
 
@@ -94,26 +95,26 @@ func (s *SignalTypeHandler) CreateSignalTypeHandler(w http.ResponseWriter, r *ht
 	isn, err := s.queries.GetIsnBySlug(r.Context(), isnSlug)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			utils.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, "ISN not found")
+			responses.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, "ISN not found")
 			return
 		}
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error: %v", err))
 		return
 	}
 	if isn.UserAccountID != userAccountID {
-		utils.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "you are not the owner of this ISN")
+		responses.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "you are not the owner of this ISN")
 		return
 	}
 	// check the isn is in use
 	if !isn.IsInUse {
-		utils.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "this ISN is marked as 'not in use'")
+		responses.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "this ISN is marked as 'not in use'")
 		return
 	}
 
 	defer r.Body.Close()
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("could not decode request body: %v", err))
+		responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("could not decode request body: %v", err))
 		return
 	}
 
@@ -125,62 +126,62 @@ func (s *SignalTypeHandler) CreateSignalTypeHandler(w http.ResponseWriter, r *ht
 		req.ReadmeURL == nil ||
 		req.Detail == nil ||
 		req.Stage == nil {
-		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, "one or missing field in the body of the requet")
+		responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, "one or missing field in the body of the requet")
 		return
 	}
 
 	if !isn.IsInUse {
-		utils.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "this ISN is marked as 'not in use'")
+		responses.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "this ISN is marked as 'not in use'")
 		return
 	}
 
 	if err := utils.CheckSignalTypeURL(req.SchemaURL, "schema"); err != nil {
-		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("invalid schema url: %v", err))
+		responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("invalid schema url: %v", err))
 		return
 	}
 	if err := utils.CheckSignalTypeURL(*req.ReadmeURL, "readme"); err != nil {
-		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("invalid readme url: %v", err))
+		responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("invalid readme url: %v", err))
 		return
 	}
 
 	if !signalsd.ValidSignalTypeStages[*req.Stage] {
-		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeInvalidRequest, "invalid stage supplied")
+		responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeInvalidRequest, "invalid stage supplied")
 		return
 	}
 
 	// generate slug.
 	slug, err = utils.GenerateSlug(req.Title)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "could not create slug from title")
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "could not create slug from title")
 		return
 	}
 
 	// check if slug has already been used (not permitted)
 	exists, err := s.queries.ExistsSignalTypeWithSlug(r.Context(), slug)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, fmt.Sprintf("database error: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, fmt.Sprintf("database error: %v", err))
 		return
 	}
 	if exists {
-		utils.RespondWithError(w, r, http.StatusConflict, apperrors.ErrCodeResourceAlreadyExists, fmt.Sprintf("the {%s} slug is already in use - pick a new title for your signal def", slug))
+		responses.RespondWithError(w, r, http.StatusConflict, apperrors.ErrCodeResourceAlreadyExists, fmt.Sprintf("the {%s} slug is already in use - pick a new title for your signal def", slug))
 		return
 	}
 
 	//  increment the semver using the supplied bump instruction supplied in the
 	currentSignalType, err := s.queries.GetSemVerAndSchemaForLatestSlugVersion(r.Context(), slug)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, fmt.Sprintf("database error: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, fmt.Sprintf("database error: %v", err))
 		return
 	}
 
 	if currentSignalType.SchemaURL == req.SchemaURL {
-		utils.RespondWithError(w, r, http.StatusConflict, apperrors.ErrCodeResourceAlreadyExists, "you must supply an updated schemaURL if you want to bump the version")
+		responses.RespondWithError(w, r, http.StatusConflict, apperrors.ErrCodeResourceAlreadyExists, "you must supply an updated schemaURL if you want to bump the version")
 		return
 	}
 
 	semVer, err = utils.IncrementSemVer(req.BumpType, currentSignalType.SemVer)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, fmt.Sprintf("could not bump sem ver : %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, fmt.Sprintf("could not bump sem ver : %v", err))
 		return
 	}
 
@@ -197,7 +198,7 @@ func (s *SignalTypeHandler) CreateSignalTypeHandler(w http.ResponseWriter, r *ht
 		Stage:     *req.Stage,
 	})
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not create signal definition: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not create signal definition: %v", err))
 		return
 	}
 
@@ -209,7 +210,7 @@ func (s *SignalTypeHandler) CreateSignalTypeHandler(w http.ResponseWriter, r *ht
 		semVer,
 	)
 
-	utils.RespondWithJSON(w, http.StatusCreated, CreateSignalTypeResponse{
+	responses.RespondWithJSON(w, http.StatusCreated, CreateSignalTypeResponse{
 		Slug:        returnedSignalType.Slug,
 		SemVer:      returnedSignalType.SemVer,
 		ResourceURL: resourceURL,
@@ -242,7 +243,7 @@ func (s *SignalTypeHandler) UpdateSignalTypeHandler(w http.ResponseWriter, r *ht
 
 	userAccountID, ok := auth.ContextAccountID(r.Context())
 	if !ok {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "did not receive userAccountID from middleware")
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "did not receive userAccountID from middleware")
 	}
 
 	slug := r.PathValue("slug")
@@ -255,10 +256,10 @@ func (s *SignalTypeHandler) UpdateSignalTypeHandler(w http.ResponseWriter, r *ht
 	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			utils.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, fmt.Sprintf("No signal definition found for %s/v%s", slug, semVer))
+			responses.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, fmt.Sprintf("No signal definition found for %s/v%s", slug, semVer))
 			return
 		}
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error %v", err))
 		return
 	}
 
@@ -268,19 +269,19 @@ func (s *SignalTypeHandler) UpdateSignalTypeHandler(w http.ResponseWriter, r *ht
 	isn, err := s.queries.GetIsnBySlug(r.Context(), isnSlug)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			utils.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, "ISN not found")
+			responses.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, "ISN not found")
 			return
 		}
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error: %v", err))
 		return
 	}
 	if isn.UserAccountID != userAccountID {
-		utils.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "you are not the owner of this ISN")
+		responses.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "you are not the owner of this ISN")
 		return
 	}
 	// check the isn is in use
 	if !isn.IsInUse {
-		utils.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "this ISN is marked as 'not in use'")
+		responses.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "this ISN is marked as 'not in use'")
 		return
 	}
 
@@ -290,20 +291,20 @@ func (s *SignalTypeHandler) UpdateSignalTypeHandler(w http.ResponseWriter, r *ht
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&req)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("could not decode request body: %v", err))
+		responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("could not decode request body: %v", err))
 		return
 	}
 
 	if req.Detail == nil &&
 		req.ReadmeURL == nil &&
 		req.Stage == nil {
-		utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, "no updateable fields found in body of request")
+		responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, "no updateable fields found in body of request")
 		return
 	}
 	// prepare struct for update
 	if req.ReadmeURL != nil {
 		if err := utils.CheckSignalTypeURL(*req.ReadmeURL, "readme"); err != nil {
-			utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("invalid readme url: %v", err))
+			responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeMalformedBody, fmt.Sprintf("invalid readme url: %v", err))
 			return
 		}
 		signalType.ReadmeURL = *req.ReadmeURL
@@ -315,7 +316,7 @@ func (s *SignalTypeHandler) UpdateSignalTypeHandler(w http.ResponseWriter, r *ht
 
 	if req.Stage != nil {
 		if !signalsd.ValidSignalTypeStages[*req.Stage] {
-			utils.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeInvalidRequest, "invalid stage supplied")
+			responses.RespondWithError(w, r, http.StatusBadRequest, apperrors.ErrCodeInvalidRequest, "invalid stage supplied")
 			return
 		}
 		signalType.Stage = *req.Stage
@@ -329,14 +330,14 @@ func (s *SignalTypeHandler) UpdateSignalTypeHandler(w http.ResponseWriter, r *ht
 		Stage:     signalType.Stage,
 	})
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error %v", err))
 		return
 	}
 	if rowsAffected != 1 {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, "database error - more than one signal definition deleted")
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, "database error - more than one signal definition deleted")
 		return
 	}
-	utils.RespondWithJSON(w, http.StatusNoContent, "")
+	responses.RespondWithJSON(w, http.StatusNoContent, "")
 }
 
 // DeleteSignalTypeHandler godoc
@@ -358,7 +359,7 @@ func (s *SignalTypeHandler) DeleteSignalTypeHandler(w http.ResponseWriter, r *ht
 
 	userAccountID, ok := auth.ContextAccountID(r.Context())
 	if !ok {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "did not receive userAccountID from middleware")
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "did not receive userAccountID from middleware")
 	}
 
 	slug := r.PathValue("slug")
@@ -371,10 +372,10 @@ func (s *SignalTypeHandler) DeleteSignalTypeHandler(w http.ResponseWriter, r *ht
 	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			utils.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, fmt.Sprintf("No signal definition found for %s/v%s", slug, semVer))
+			responses.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, fmt.Sprintf("No signal definition found for %s/v%s", slug, semVer))
 			return
 		}
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error %v", err))
 		return
 	}
 
@@ -384,32 +385,32 @@ func (s *SignalTypeHandler) DeleteSignalTypeHandler(w http.ResponseWriter, r *ht
 	isn, err := s.queries.GetIsnBySlug(r.Context(), isnSlug)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			utils.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, "ISN not found")
+			responses.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, "ISN not found")
 			return
 		}
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error: %v", err))
 		return
 	}
 	if isn.UserAccountID != userAccountID {
-		utils.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "you are not the owner of this ISN")
+		responses.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "you are not the owner of this ISN")
 		return
 	}
 	// check the isn is in use
 	if !isn.IsInUse {
-		utils.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "this ISN is marked as 'not in use'")
+		responses.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, "this ISN is marked as 'not in use'")
 		return
 	}
 
 	rowsAffected, err := s.queries.DeleteSignalType(r.Context(), signalType.ID)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error %v", err))
 		return
 	}
 	if rowsAffected > 1 {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, "database error - more than one signal definition deleted")
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, "database error - more than one signal definition deleted")
 		return
 	}
-	utils.RespondWithJSON(w, http.StatusNoContent, "")
+	responses.RespondWithJSON(w, http.StatusNoContent, "")
 }
 
 // GetSignalTypeHandler godoc
@@ -438,16 +439,16 @@ func (s *SignalTypeHandler) GetSignalTypeHandler(w http.ResponseWriter, r *http.
 	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			utils.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, fmt.Sprintf("No signal definition found for %s/v%s", slug, semVer))
+			responses.RespondWithError(w, r, http.StatusNotFound, apperrors.ErrCodeResourceNotFound, fmt.Sprintf("No signal definition found for %s/v%s", slug, semVer))
 			return
 		}
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error %v", err))
 		return
 	}
 
 	isn, err := s.queries.GetIsnBySignalTypeID(r.Context(), signalType.ID)
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("database error %v", err))
 		return
 	}
 
@@ -455,7 +456,7 @@ func (s *SignalTypeHandler) GetSignalTypeHandler(w http.ResponseWriter, r *http.
 		GetForDisplaySignalTypeBySlugRow: signalType,
 		Isn:                              isn,
 	}
-	utils.RespondWithJSON(w, http.StatusOK, res)
+	responses.RespondWithJSON(w, http.StatusOK, res)
 }
 
 // GetSignalTypesHandler godoc
@@ -471,9 +472,9 @@ func (s *SignalTypeHandler) GetSignalTypesHandler(w http.ResponseWriter, r *http
 
 	res, err := s.queries.GetSignalTypes(r.Context())
 	if err != nil {
-		utils.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("error getting signalTypes from database: %v", err))
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("error getting signalTypes from database: %v", err))
 		return
 	}
-	utils.RespondWithJSON(w, http.StatusOK, res)
+	responses.RespondWithJSON(w, http.StatusOK, res)
 
 }
