@@ -12,7 +12,7 @@ import (
 	"github.com/nickabs/signalsd/app/internal/auth"
 	"github.com/nickabs/signalsd/app/internal/database"
 	"github.com/nickabs/signalsd/app/internal/server/responses"
-	"github.com/nickabs/signalsd/app/internal/utils"
+	"github.com/nickabs/signalsd/app/internal/server/utils"
 
 	signalsd "github.com/nickabs/signalsd/app"
 )
