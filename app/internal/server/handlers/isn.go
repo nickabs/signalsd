@@ -77,7 +77,7 @@ type IsnAndLinkedInfo struct {
 //	@Security		BearerAccessToken
 //	@Security		RefreshTokenCookieAuth
 //
-//	@Router			/api/isn/{isn_slug} [post]
+//	@Router			/api/isn/ [post]
 //
 // Use with RequireRole (admin,owner)
 func (i *IsnHandler) CreateIsnHandler(w http.ResponseWriter, r *http.Request) {

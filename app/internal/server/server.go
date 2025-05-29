@@ -69,6 +69,7 @@ func (s *Server) registerRoutes() {
 	// signald runtime handlers
 	webhooks := handlers.NewWebhookHandler(s.queries)
 	signalBatches := handlers.NewSignalsBatchHandler(s.queries)
+	signals := handlers.NewSignalsHandler(s.queries)
 
 	s.router.Use(middleware.RequestID)
 	s.router.Use(logger.LoggingMiddleware(s.httpLogger))
@@ -145,8 +146,12 @@ func (s *Server) registerRoutes() {
 				// signal batches
 				r.Post("/isn/{isn_slug}/signals/batches", signalBatches.CreateSignalsBatchHandler)
 
+				// signal post
+				//r.Post("/isn/{isn_slug}/signal_types/{signal_type_slug}/signals", signals.CreateSignalsHandler)
+				r.Post("/isn/{isn_slug}/signal-types/{signal_type_slug}/v{version}/signals", signals.CreateSignalsHandler)
+
 				// webhooks
-				r.Post("/api/webhooks", webhooks.HandlerWebhooks)
+				r.Post("/webhooks", webhooks.HandlerWebhooks)
 			})
 		})
 

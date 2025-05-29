@@ -1,11 +1,14 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/nickabs/signalsd/app/internal/apperrors"
+	"github.com/nickabs/signalsd/app/internal/auth"
 	"github.com/nickabs/signalsd/app/internal/database"
 	"github.com/nickabs/signalsd/app/internal/server/responses"
+	"github.com/rs/zerolog"
 )
 
 type SignalsHandler struct {
@@ -35,11 +38,52 @@ func NewSignalsHandler(queries *database.Queries) *SignalsHandler {
 //	@Description	- Correlation_ids are auto generated on the server unless supplied by the client, in which case they are used to identify another signal that this signal is related to. The correlated signal does not need to be owned by the same account.
 //
 //	@Router			/isn/{isn_slug}/signal_types/{signal_type_slug}/signals [post]
-func (s *SignalsHandler) SignalsHandlers(w http.ResponseWriter, r *http.Request) {
+func (s *SignalsHandler) CreateSignalsHandler(w http.ResponseWriter, r *http.Request) {
 
-	//isnSlug := r.PathValue("slug_isn")
-	//signalTypeSlug := r.PathValue("signal_type_slug")
+	isnSlug := r.PathValue("isn_slug")
+	signalTypeSlug := r.PathValue("signal_type_slug")
+	version := r.PathValue("version")
 
+	signalTypePath := fmt.Sprintf("%v/%v", signalTypeSlug, version)
+	claims, ok := auth.ContextAccessTokenClaims(r.Context())
+	if !ok {
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "could not get claims from context")
+		return
+	}
+
+	accountID, ok := auth.ContextAccountID(r.Context())
+	if !ok {
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "could not get accountID from context")
+		return
+	}
+
+	logger := zerolog.Ctx(r.Context())
+
+	if claims.AccountID != accountID {
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "the accountID and the claims.AccountID from context do not match")
+		return
+	}
+
+	// check that the isn is writable by this user
+
+	if claims.IsnPerms[isnSlug].Permission != "write" {
+		responses.RespondWithError(w, r, http.StatusForbidden, apperrors.ErrCodeForbidden, fmt.Sprintf("you do not have permission to write to isn: %s", isnSlug))
+		return
+	}
+
+	// check that this the user is requesting a valid signal type/version for this isn
+	found := false
+	for _, path := range claims.IsnPerms[isnSlug].SignalTypePaths {
+		if path == signalTypePath {
+			found = true
+			break
+		}
+	}
+	if !found {
+
+	}
+
+	logger.Debug().Msgf("claims %+v", claims)
 	// the claims
 	// middleware to check  the type of batch - is
 

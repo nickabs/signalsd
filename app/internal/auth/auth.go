@@ -81,24 +81,29 @@ func (a AuthService) CheckTokenHash(hash string, token string) bool {
 	return hash == a.HashToken(token)
 }
 
-// create a JWT signed with HS256 using the app's secret key.
+// create a JWT access token signed with HS256 using the app's secret key.
 //
-// the access token claims are updated to contain:
-// - account id
-// - A list of all the isns the account has access to
-// - The permission granted (read or write)
-// - the list of available signal_types in the isn
+// Roles and ISN read/write permissions are retreived from the database and included in the token claims and the response body.
 //
-// # For convenience the claims data is also included in the body of the response
-//
-// Roles and ISN read/write permissions are retreived from the database and included in the token claims.
+// the access token contains to contain:
+//   - standard jwt registerd claims(sub, exp, iat)
+//   - account id
+//   - account role (owner, admin, member)
+//   - A list of all the isns the account has access to
+//   - The permission granted (read or write)
+//   - the list of available signal_types in the isn
 //
 // The function returns the token inside a AccessTokenResponse that can be returned to the client.
 //
 // if this function generates an error, it is unexpected and the calling handler should produce a 500 status code
 //
-// Note that since the tokens last 30 mins, there is the potential for the permissions to become stale.
-// if there are particular requests that *must* have the latest permissions the handler should check the db rather than using the claims info.
+//	this function is only used when logging in or refreshing an access token.
+//	Since the calling functions authenticate using secrets that (should) only be known by the client, the claims in the token can be trusted by the handler without rechecking the database
+//
+// Caveat:
+//
+//	Note that since the tokens last 30 mins, there is the potential for the permissions to become stale.
+//	if there are particular requests that *must* have the latest permissions the handler should check the db rather than using the claims info.
 func (a AuthService) BuildAccessTokenResponse(ctx context.Context) (AccessTokenResponse, error) {
 
 	issuedAt := time.Now()
