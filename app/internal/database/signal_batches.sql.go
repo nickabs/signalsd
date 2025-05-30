@@ -72,20 +72,20 @@ func (q *Queries) CreateSignalBatch(ctx context.Context, arg CreateSignalBatchPa
 	return i, err
 }
 
-const getLatestISNSignalBatchByAccountID = `-- name: GetLatestISNSignalBatchByAccountID :one
+const getLatestIsnSignalBatchByAccountID = `-- name: GetLatestIsnSignalBatchByAccountID :one
 SELECT id, created_at, updated_at, isn_id, account_id, is_latest, account_type FROM signal_batches 
 WHERE isn_id = $1 
 AND account_id = $2
 AND is_latest = TRUE
 `
 
-type GetLatestISNSignalBatchByAccountIDParams struct {
+type GetLatestIsnSignalBatchByAccountIDParams struct {
 	IsnID     uuid.UUID `json:"isn_id"`
 	AccountID uuid.UUID `json:"account_id"`
 }
 
-func (q *Queries) GetLatestISNSignalBatchByAccountID(ctx context.Context, arg GetLatestISNSignalBatchByAccountIDParams) (SignalBatch, error) {
-	row := q.db.QueryRowContext(ctx, getLatestISNSignalBatchByAccountID, arg.IsnID, arg.AccountID)
+func (q *Queries) GetLatestIsnSignalBatchByAccountID(ctx context.Context, arg GetLatestIsnSignalBatchByAccountIDParams) (SignalBatch, error) {
+	row := q.db.QueryRowContext(ctx, getLatestIsnSignalBatchByAccountID, arg.IsnID, arg.AccountID)
 	var i SignalBatch
 	err := row.Scan(
 		&i.ID,

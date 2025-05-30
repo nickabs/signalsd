@@ -23,8 +23,16 @@ UPDATE signal_batches
 SET is_latest = FALSE
 WHERE isn_id = $1 and account_id = $2;
 
--- name: GetLatestISNSignalBatchByAccountID :one
+-- name: GetLatestIsnSignalBatchByAccountID :one
 SELECT * FROM signal_batches 
 WHERE isn_id = $1 
 AND account_id = $2
 AND is_latest = TRUE;
+
+-- name: GetLatestSignalBatchByIsnSlugAndBatchID :one
+SELECT * FROM signal_batches sb
+JOIN isn i 
+ON i.id = sb.isn_id
+WHERE i.slug = $1 
+AND sb.id = $2
+AND sb.is_latest = TRUE;

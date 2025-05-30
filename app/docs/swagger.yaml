@@ -1479,23 +1479,51 @@ paths:
       summary: Grant ISN access permission
       tags:
       - ISN Permissions
-  /isn/{isn_slug}/signal_types/{signal_type_slug}/signals:
+  /isn/{isn_slug}/signal-types/{signal_type_slug}/signals:
     post:
-      description: |-
-        - the client can submit arrays of signals for a single type in a single req (subject to the size
-        limits defined on the signal type definition)
-        - The client-supplied local_ref must uniquely identify each signal of the
-        specified signal type that will be supplied by the account.
-        - If a local reference is received more than once from an account for a
-        specified signal_type it will be stored with a incremented version number
-        and the previous version will be marked as latest=false (it does not matter
-        if the previous signal was received in a different batch, but the signal must
-        be owned by the same account).
-        - If a deletion request is received, all version of the signal will be marked
-        as 'withdrawn'.
-        - Correlation_ids are auto generated on the server unless supplied by the client, in which case they are used to identify another signal that this signal is related to. The correlated signal does not need to be owned by the same account.
+      description: "- the client can submit an array of signals to this endpoint for
+        storage on the ISN\n- payloads must not mix signals of different types, and
+        the payload is subject to the sizen\tlimits defined on the ISN.\n- The client-supplied
+        local_ref must uniquely identify each signal of the specified signal type
+        that will be supplied by the account.\n- If a local reference is received
+        more than once from an account for a specified signal_type it will be stored
+        with a incremented version number.\nThe previous version will be marked as
+        latest=false (it does not matter if the previous signal was received in a
+        different batch, but the signal must\nbe owned by the same account).\n- If
+        a deletion request is received, all version of the signal will be marked as
+        'withdrawn'.\n- Correlation_ids are auto generated on the server unless supplied
+        by the client, in which case they are used to identify another signal that
+        this signal is related to. The correlated signal does not need to be owned
+        by the same account.\n- requests are only accepted for the open signal batch
+        for this account\n\n* Authentication *\n\nRequires a valid access token.\nThe
+        claims in the access token include the ISNs that the account can use and all
+        the available signal_types that can be received in each ISN.\n\n- the RequireIsnWritePErmission
+        middleware will consult the claims in the access token to confirm the user
+        is allowed to write to the isn\n- This handler checks that the signal_type
+        in the url is also listed in the claims (this is to catch mistyped urls)"
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Send signals
+      tags:
+      - Signals Management
+  /isn/{isn_slug}/signal-types/{signal_type_slug}/signals/{signal_id}:
+    delete:
       responses: {}
-      summary: send one or more signals
+      summary: Withdraw a signal (TODO)
+      tags:
+      - Signals Management
+    get:
+      responses: {}
+      summary: get a signal (TODO)
       tags:
       - Signals Management
   /webhooks:
