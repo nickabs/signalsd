@@ -306,6 +306,9 @@ definitions:
       resource_url:
         example: http://localhost:8080/api/isn/sample-isn--example-org
         type: string
+      signals_batch_id:
+        example: b51faf05-aaed-4250-b334-2258ccdf1ff2
+        type: string
       slug:
         example: sample-isn--example-org
         type: string

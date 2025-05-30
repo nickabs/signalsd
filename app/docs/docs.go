@@ -1772,6 +1772,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "http://localhost:8080/api/isn/sample-isn--example-org"
                 },
+                "signals_batch_id": {
+                    "type": "string",
+                    "example": "b51faf05-aaed-4250-b334-2258ccdf1ff2"
+                },
                 "slug": {
                     "type": "string",
                     "example": "sample-isn--example-org"

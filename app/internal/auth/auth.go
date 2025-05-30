@@ -178,6 +178,7 @@ func (a AuthService) BuildAccessTokenResponse(ctx context.Context) (AccessTokenR
 		for _, siteIsn := range siteIsns {
 			isnPerms[siteIsn.Slug] = IsnPerms{
 				Permission:      "write",
+				SignalBatchID:   latestSignalBatchIDs[siteIsn.Slug],
 				SignalTypePaths: siteIsnsSignalTypePaths[siteIsn.Slug],
 			}
 		}

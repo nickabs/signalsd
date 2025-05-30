@@ -39,9 +39,10 @@ type UpdateIsnRequest struct {
 }
 
 type CreateIsnResponse struct {
-	ID          uuid.UUID `json:"id" example:"67890684-3b14-42cf-b785-df28ce570400"`
-	Slug        string    `json:"slug" example:"sample-isn--example-org"`
-	ResourceURL string    `json:"resource_url" example:"http://localhost:8080/api/isn/sample-isn--example-org"`
+	ID             uuid.UUID `json:"id" example:"67890684-3b14-42cf-b785-df28ce570400"`
+	Slug           string    `json:"slug" example:"sample-isn--example-org"`
+	SignalsBatchID uuid.UUID `json:"signals_batch_id" example:"b51faf05-aaed-4250-b334-2258ccdf1ff2"`
+	ResourceURL    string    `json:"resource_url" example:"http://localhost:8080/api/isn/sample-isn--example-org"`
 }
 
 // used in GET handler
@@ -62,6 +63,7 @@ type IsnAndLinkedInfo struct {
 //	@Description	The only storage_type currently supported is "admin_db"
 //	@Description	when storage_type = "admin_db" the signalsd are stored in the relational database used by the API service to store the admin configuration
 //	@Description	Specify "admin_db" for storage_connection_url in this case (anything else is overriwtten with this value)
+//	@Descriptions	ISN admins automatically get write permission for their own sites, so this endpoint also starts a signals batch for them
 //	@Description
 //	@Description	This endpoint can only be used by the site owner or an admin
 //
@@ -147,6 +149,16 @@ func (i *IsnHandler) CreateIsnHandler(w http.ResponseWriter, r *http.Request) {
 		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not create ISN: %v", err))
 		return
 	}
+	// crete a signals batch
+	returnedSignalBatch, err := i.queries.CreateSignalBatch(r.Context(), database.CreateSignalBatchParams{
+		IsnID:       returnedIsn.ID,
+		AccountID:   userAccountID,
+		AccountType: "user", // only users can use the isn config endpoints
+	})
+	if err != nil {
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not insert signal_batch: %v", err))
+		return
+	}
 
 	resourceURL := fmt.Sprintf("%s://%s/api/isn/%s",
 		utils.GetScheme(r),
@@ -155,9 +167,10 @@ func (i *IsnHandler) CreateIsnHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	responses.RespondWithJSON(w, http.StatusCreated, CreateIsnResponse{
-		ID:          returnedIsn.ID,
-		Slug:        returnedIsn.Slug,
-		ResourceURL: resourceURL,
+		ID:             returnedIsn.ID,
+		Slug:           returnedIsn.Slug,
+		SignalsBatchID: returnedSignalBatch.ID,
+		ResourceURL:    resourceURL,
 	})
 }
 
