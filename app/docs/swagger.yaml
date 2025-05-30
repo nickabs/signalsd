@@ -648,6 +648,8 @@ paths:
         The only storage_type currently supported is "admin_db"
         when storage_type = "admin_db" the signalsd are stored in the relational database used by the API service to store the admin configuration
         Specify "admin_db" for storage_connection_url in this case (anything else is overriwtten with this value)
+        ISN admins automatically get write permission for their own sites, so this endpoint also starts a signals batch for them
+        owners automatically get write permission on all isns, so start a batch for them too
 
         This endpoint can only be used by the site owner or an admin
       parameters:

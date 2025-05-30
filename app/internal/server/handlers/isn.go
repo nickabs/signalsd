@@ -93,6 +93,13 @@ func (i *IsnHandler) CreateIsnHandler(w http.ResponseWriter, r *http.Request) {
 		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "did not receive userAccountID from middleware")
 		return
 	}
+
+	claims, ok := auth.ContextAccessTokenClaims(r.Context())
+	if !ok {
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeInternalError, "did not receive claims from middleware")
+		return
+	}
+
 	defer r.Body.Close()
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -164,13 +171,16 @@ func (i *IsnHandler) CreateIsnHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = i.queries.CreateOwnerSignalBatch(r.Context(), database.CreateSignalBatchParams{
-		IsnID:       returnedIsn.ID,
-		AccountType: "user", // only users can use the isn config endpoints
-	})
-	if err != nil {
-		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not insert signal_batch: %v", err))
-		return
+	// if the isn was created by someone other than owner then create a batch for the owner so they can post to the ISN (owners have unlimited access)
+	if claims.Role != "owner" {
+		_, err = i.queries.CreateOwnerSignalBatch(r.Context(), database.CreateOwnerSignalBatchParams{
+			IsnID:       returnedIsn.ID,
+			AccountType: "user", // only users can use the isn config endpoints
+		})
+		if err != nil {
+			responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not insert signal_batch: %v", err))
+			return
+		}
 	}
 
 	resourceURL := fmt.Sprintf("%s://%s/api/isn/%s",

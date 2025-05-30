@@ -45,7 +45,7 @@ INSERT INTO signal_batches (
     now(), 
     now(), 
     $1, 
-    (select id from users where role = 'owner'),
+    (select account_id from users where user_role = 'owner'),
     TRUE,
     $2
 )

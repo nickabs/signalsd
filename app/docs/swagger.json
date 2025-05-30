@@ -127,7 +127,7 @@
                         "RefreshTokenCookieAuth": []
                     }
                 ],
-                "description": "Create an Information Sharing Network (ISN)\n\nvisibility = \"private\" means that signalsd on the network can only be seen by network participants.\n\nThe only storage_type currently supported is \"admin_db\"\nwhen storage_type = \"admin_db\" the signalsd are stored in the relational database used by the API service to store the admin configuration\nSpecify \"admin_db\" for storage_connection_url in this case (anything else is overriwtten with this value)\n\nThis endpoint can only be used by the site owner or an admin",
+                "description": "Create an Information Sharing Network (ISN)\n\nvisibility = \"private\" means that signalsd on the network can only be seen by network participants.\n\nThe only storage_type currently supported is \"admin_db\"\nwhen storage_type = \"admin_db\" the signalsd are stored in the relational database used by the API service to store the admin configuration\nSpecify \"admin_db\" for storage_connection_url in this case (anything else is overriwtten with this value)\nISN admins automatically get write permission for their own sites, so this endpoint also starts a signals batch for them\nowners automatically get write permission on all isns, so start a batch for them too\n\nThis endpoint can only be used by the site owner or an admin",
                 "tags": [
                     "ISN config"
                 ],

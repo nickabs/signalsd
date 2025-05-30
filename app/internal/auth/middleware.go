@@ -75,6 +75,7 @@ func (a AuthService) RequireRole(allowedRoles ...string) func(http.Handler) http
 			for _, role := range allowedRoles {
 				if claims.Role == role {
 					logger.Info().Msgf("Role confirmed: %v", role)
+					//todo add role to context
 					next.ServeHTTP(w, r)
 					return
 				}
