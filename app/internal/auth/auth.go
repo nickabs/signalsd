@@ -17,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	signalsd "github.com/nickabs/signalsd/app"
 	"github.com/nickabs/signalsd/app/internal/database"
+	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -45,8 +46,9 @@ type AccessTokenResponse struct {
 }
 
 type IsnPerms struct {
-	Permission      string   `json:"permission" enums:"read,write" example:"read"`
-	SignalTypePaths []string `json:"signal_types,omitempty" example:"signal-type-1/v0.0.1,signal-type-2/v1.0.0"` // list of available signal types for the isn
+	Permission      string    `json:"permission" enums:"read,write" example:"read"`
+	SignalBatchID   uuid.UUID `json:"signal_batch_id" example:"967affe9-5628-4fdd-921f-020051344a12"`
+	SignalTypePaths []string  `json:"signal_types,omitempty" example:"signal-type-1/v0.0.1,signal-type-2/v1.0.0"` // list of available signal types for the isn
 }
 
 type AccessTokenClaims struct {
@@ -128,16 +130,16 @@ func (a AuthService) BuildAccessTokenResponse(ctx context.Context) (AccessTokenR
 		return AccessTokenResponse{}, fmt.Errorf("invalid user role %v for user %v", account.AccountRole, accountID)
 	}
 
-	// get the isns for this host
-	isns, err := a.queries.GetIsnsWithIsnReceiver(ctx)
+	// get all the siteIsns on this site
+	siteIsns, err := a.queries.GetIsnsWithIsnReceiver(ctx)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return AccessTokenResponse{}, fmt.Errorf("database error getting ISNs: %w", err)
 	}
 
-	// create a map of isns with their available signal_type paths (sample-signal--example-org/0.0.1 etc)
+	// create a map of theIsns with their available signal_type paths (sample-signal--example-org/0.0.1 etc)
 	// this list is included in the claims assuming the user has permission for the isn
-	IsnSignalTypePaths := make(map[string][]string)
-	for _, isn := range isns {
+	siteIsnsSignalTypePaths := make(map[string][]string)
+	for _, isn := range siteIsns {
 
 		signalTypeRows, err := a.queries.GetInUseSignalTypesByIsnID(ctx, isn.ID)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -150,48 +152,71 @@ func (a AuthService) BuildAccessTokenResponse(ctx context.Context) (AccessTokenR
 			signalTypePaths = append(signalTypePaths, ver)
 		}
 
-		IsnSignalTypePaths[isn.Slug] = signalTypePaths
+		siteIsnsSignalTypePaths[isn.Slug] = signalTypePaths
 	}
 
-	// get the isns this account has access to.
-	isnAccounts, err := a.queries.GetIsnAccountsByAccountID(ctx, accountID)
+	// get the isns this account's has access to.
+	isnsAccessibleByAccount, err := a.queries.GetIsnAccountsByAccountID(ctx, accountID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return AccessTokenResponse{}, fmt.Errorf("database error getting ISN accounts: %w", err)
 	}
 
-	// set up claims isnPerms map
+	//create a map of isn_slugs > the accounts open batch for the isn
+	latestSignalBatches, err := a.queries.GetLatestIsnSignalBatchesByAccountID(ctx, accountID)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return AccessTokenResponse{}, fmt.Errorf("database error %w", err)
+	}
+
+	latestSignalBatchIDs := make(map[string]uuid.UUID)
+
+	//todo
+	logger := zerolog.Ctx(ctx)
+	for _, batch := range latestSignalBatches {
+		latestSignalBatchIDs[batch.IsnSlug] = batch.ID
+		logger.Debug().Msgf("batch found %+v", batch)
+	}
+
+	// set up isnPerms map for claims
 	switch account.AccountRole {
 	case "owner":
 		// owner can write to all ISNs
-		for _, isn := range isns {
-			isnPerms[isn.Slug] = IsnPerms{
+		for _, siteIsn := range siteIsns {
+			isnPerms[siteIsn.Slug] = IsnPerms{
 				Permission:      "write",
-				SignalTypePaths: IsnSignalTypePaths[isn.Slug],
+				SignalTypePaths: siteIsnsSignalTypePaths[siteIsn.Slug],
 			}
 		}
+		logger.Debug().Msgf("latestSignalBatchIDs %+v", latestSignalBatchIDs)
 
 	case "admin":
-		// Admin can write to owned ISNs + ISNs they have been granted permissions to.
-		for _, isn := range isns {
-			if account.ID == isn.UserAccountID {
-				isnPerms[isn.Slug] = IsnPerms{
+		// Admin can write to any ISN they created
+		for _, siteIsn := range siteIsns {
+			if account.ID == siteIsn.UserAccountID {
+				isnPerms[siteIsn.Slug] = IsnPerms{
 					Permission:      "write",
-					SignalTypePaths: IsnSignalTypePaths[isn.Slug],
+					SignalBatchID:   latestSignalBatchIDs[siteIsn.Slug],
+					SignalTypePaths: siteIsnsSignalTypePaths[siteIsn.Slug],
 				}
+				logger.Debug().Msgf("OWNED IsnSlug %v value in latestSignalBatchIDs %v", siteIsn.Slug, latestSignalBatchIDs[siteIsn.Slug])
 			}
 		}
-		for _, isnAccount := range isnAccounts {
-			isnPerms[isnAccount.IsnSlug] = IsnPerms{
-				Permission:      isnAccount.Permission,
-				SignalTypePaths: IsnSignalTypePaths[isnAccount.IsnSlug],
+		//.. and access any ISN where they were granted read or write permission by the isn owner
+
+		for _, accessibleIsn := range isnsAccessibleByAccount {
+			isnPerms[accessibleIsn.IsnSlug] = IsnPerms{
+				Permission:      accessibleIsn.Permission,
+				SignalBatchID:   latestSignalBatchIDs[accessibleIsn.IsnSlug],
+				SignalTypePaths: siteIsnsSignalTypePaths[accessibleIsn.IsnSlug],
 			}
+			logger.Debug().Msgf("accessibleIsn.IsnSlug %v value in latestSignalBatchIDs %v", accessibleIsn.IsnSlug, latestSignalBatchIDs[accessibleIsn.IsnSlug])
 		}
 	case "member":
 		// Member only has granted permissions (not service identites are always treated as members)
-		for _, isnAccount := range isnAccounts {
-			isnPerms[isnAccount.IsnSlug] = IsnPerms{
-				Permission:      isnAccount.Permission,
-				SignalTypePaths: IsnSignalTypePaths[isnAccount.IsnSlug],
+		for _, accessibleIsn := range isnsAccessibleByAccount {
+			isnPerms[accessibleIsn.IsnSlug] = IsnPerms{
+				Permission:      accessibleIsn.Permission,
+				SignalBatchID:   latestSignalBatchIDs[accessibleIsn.IsnSlug],
+				SignalTypePaths: siteIsnsSignalTypePaths[accessibleIsn.IsnSlug],
 			}
 		}
 	default:

@@ -105,7 +105,6 @@ func (s *SignalsHandler) CreateSignalsHandler(w http.ResponseWriter, r *http.Req
 
 	// is batch open?  Reject if not
 
-	s.queries.GetLatestIsnSignalBatchByAccountID(r.Context(), accountID)
 	//
 	// split json into array
 	// for array insert

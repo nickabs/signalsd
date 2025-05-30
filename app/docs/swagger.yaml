@@ -74,6 +74,9 @@ definitions:
         - write
         example: read
         type: string
+      signal_batch_id:
+        example: 967affe9-5628-4fdd-921f-020051344a12
+        type: string
       signal_types:
         description: list of available signal types for the isn
         example:
@@ -1479,7 +1482,18 @@ paths:
       summary: Grant ISN access permission
       tags:
       - ISN Permissions
-  /isn/{isn_slug}/signal-types/{signal_type_slug}/signals:
+  /isn/{isn_slug}/signal-types/{signal_type_slug}/signals/{signal_id}:
+    delete:
+      responses: {}
+      summary: Withdraw a signal (TODO)
+      tags:
+      - Signals Management
+    get:
+      responses: {}
+      summary: get a signal (TODO)
+      tags:
+      - Signals Management
+  /isn/{isn_slug}/signal-types/{signal_type_slug}/v{version}/signals:
     post:
       description: "- the client can submit an array of signals to this endpoint for
         storage on the ISN\n- payloads must not mix signals of different types, and
@@ -1501,6 +1515,31 @@ paths:
         middleware will consult the claims in the access token to confirm the user
         is allowed to write to the isn\n- This handler checks that the signal_type
         in the url is also listed in the claims (this is to catch mistyped urls)"
+      parameters:
+      - description: isn slug
+        example: sample-isn--example-org
+        in: path
+        name: isn_slug
+        required: true
+        type: string
+      - description: signal type slug
+        example: sample-signal--example-org
+        in: path
+        name: signal_type_slug
+        required: true
+        type: string
+      - description: signal type version number
+        example: 0.0.1
+        in: path
+        name: version
+        required: true
+        type: string
+      - description: ISN receiver details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateIsnReceiverRequest'
       responses:
         "204":
           description: No Content
@@ -1512,18 +1551,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAccessToken: []
       summary: Send signals
-      tags:
-      - Signals Management
-  /isn/{isn_slug}/signal-types/{signal_type_slug}/signals/{signal_id}:
-    delete:
-      responses: {}
-      summary: Withdraw a signal (TODO)
-      tags:
-      - Signals Management
-    get:
-      responses: {}
-      summary: get a signal (TODO)
       tags:
       - Signals Management
   /webhooks:

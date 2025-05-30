@@ -1235,13 +1235,69 @@
                 }
             }
         },
-        "/isn/{isn_slug}/signal-types/{signal_type_slug}/signals": {
+        "/isn/{isn_slug}/signal-types/{signal_type_slug}/signals/{signal_id}": {
+            "get": {
+                "tags": [
+                    "Signals Management"
+                ],
+                "summary": "get a signal (TODO)",
+                "responses": {}
+            },
+            "delete": {
+                "tags": [
+                    "Signals Management"
+                ],
+                "summary": "Withdraw a signal (TODO)",
+                "responses": {}
+            }
+        },
+        "/isn/{isn_slug}/signal-types/{signal_type_slug}/v{version}/signals": {
             "post": {
+                "security": [
+                    {
+                        "BearerAccessToken": []
+                    }
+                ],
                 "description": "- the client can submit an array of signals to this endpoint for storage on the ISN\n- payloads must not mix signals of different types, and the payload is subject to the sizen\tlimits defined on the ISN.\n- The client-supplied local_ref must uniquely identify each signal of the specified signal type that will be supplied by the account.\n- If a local reference is received more than once from an account for a specified signal_type it will be stored with a incremented version number.\nThe previous version will be marked as latest=false (it does not matter if the previous signal was received in a different batch, but the signal must\nbe owned by the same account).\n- If a deletion request is received, all version of the signal will be marked as 'withdrawn'.\n- Correlation_ids are auto generated on the server unless supplied by the client, in which case they are used to identify another signal that this signal is related to. The correlated signal does not need to be owned by the same account.\n- requests are only accepted for the open signal batch for this account\n\n* Authentication *\n\nRequires a valid access token.\nThe claims in the access token include the ISNs that the account can use and all the available signal_types that can be received in each ISN.\n\n- the RequireIsnWritePErmission middleware will consult the claims in the access token to confirm the user is allowed to write to the isn\n- This handler checks that the signal_type in the url is also listed in the claims (this is to catch mistyped urls)",
                 "tags": [
                     "Signals Management"
                 ],
                 "summary": "Send signals",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "sample-isn--example-org",
+                        "description": "isn slug",
+                        "name": "isn_slug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "sample-signal--example-org",
+                        "description": "signal type slug",
+                        "name": "signal_type_slug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "0.0.1",
+                        "description": "signal type version number",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "ISN receiver details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CreateIsnReceiverRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "204": {
                         "description": "No Content"
@@ -1259,22 +1315,6 @@
                         }
                     }
                 }
-            }
-        },
-        "/isn/{isn_slug}/signal-types/{signal_type_slug}/signals/{signal_id}": {
-            "get": {
-                "tags": [
-                    "Signals Management"
-                ],
-                "summary": "get a signal (TODO)",
-                "responses": {}
-            },
-            "delete": {
-                "tags": [
-                    "Signals Management"
-                ],
-                "summary": "Withdraw a signal (TODO)",
-                "responses": {}
             }
         },
         "/webhooks": {
@@ -1379,6 +1419,10 @@
                         "write"
                     ],
                     "example": "read"
+                },
+                "signal_batch_id": {
+                    "type": "string",
+                    "example": "967affe9-5628-4fdd-921f-020051344a12"
                 },
                 "signal_types": {
                     "description": "list of available signal types for the isn",
