@@ -17,7 +17,6 @@ import (
 	"github.com/google/uuid"
 	signalsd "github.com/nickabs/signalsd/app"
 	"github.com/nickabs/signalsd/app/internal/database"
-	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -46,9 +45,9 @@ type AccessTokenResponse struct {
 }
 
 type IsnPerms struct {
-	Permission      string    `json:"permission" enums:"read,write" example:"read"`
-	SignalBatchID   uuid.UUID `json:"signal_batch_id" example:"967affe9-5628-4fdd-921f-020051344a12"`
-	SignalTypePaths []string  `json:"signal_types,omitempty" example:"signal-type-1/v0.0.1,signal-type-2/v1.0.0"` // list of available signal types for the isn
+	Permission      string     `json:"permission" enums:"read,write" example:"read"`
+	SignalBatchID   *uuid.UUID `json:"signal_batch_id,omitempty" example:"967affe9-5628-4fdd-921f-020051344a12"`
+	SignalTypePaths []string   `json:"signal_types,omitempty" example:"signal-type-1/v0.0.1,signal-type-2/v1.0.0"` // list of available signal types for the isn
 }
 
 type AccessTokenClaims struct {
@@ -161,19 +160,15 @@ func (a AuthService) BuildAccessTokenResponse(ctx context.Context) (AccessTokenR
 		return AccessTokenResponse{}, fmt.Errorf("database error getting ISN accounts: %w", err)
 	}
 
-	//create a map of isn_slugs > the accounts open batch for the isn
+	//create a map of isn_slug to the account's open batch for the isn
 	latestSignalBatches, err := a.queries.GetLatestIsnSignalBatchesByAccountID(ctx, accountID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return AccessTokenResponse{}, fmt.Errorf("database error %w", err)
 	}
 
-	latestSignalBatchIDs := make(map[string]uuid.UUID)
-
-	//todo
-	logger := zerolog.Ctx(ctx)
+	latestSignalBatchIDs := make(map[string]*uuid.UUID)
 	for _, batch := range latestSignalBatches {
-		latestSignalBatchIDs[batch.IsnSlug] = batch.ID
-		logger.Debug().Msgf("batch found %+v", batch)
+		latestSignalBatchIDs[batch.IsnSlug] = &batch.ID
 	}
 
 	// set up isnPerms map for claims
@@ -186,7 +181,6 @@ func (a AuthService) BuildAccessTokenResponse(ctx context.Context) (AccessTokenR
 				SignalTypePaths: siteIsnsSignalTypePaths[siteIsn.Slug],
 			}
 		}
-		logger.Debug().Msgf("latestSignalBatchIDs %+v", latestSignalBatchIDs)
 
 	case "admin":
 		// Admin can write to any ISN they created
@@ -197,7 +191,6 @@ func (a AuthService) BuildAccessTokenResponse(ctx context.Context) (AccessTokenR
 					SignalBatchID:   latestSignalBatchIDs[siteIsn.Slug],
 					SignalTypePaths: siteIsnsSignalTypePaths[siteIsn.Slug],
 				}
-				logger.Debug().Msgf("OWNED IsnSlug %v value in latestSignalBatchIDs %v", siteIsn.Slug, latestSignalBatchIDs[siteIsn.Slug])
 			}
 		}
 		//.. and access any ISN where they were granted read or write permission by the isn owner
@@ -208,7 +201,6 @@ func (a AuthService) BuildAccessTokenResponse(ctx context.Context) (AccessTokenR
 				SignalBatchID:   latestSignalBatchIDs[accessibleIsn.IsnSlug],
 				SignalTypePaths: siteIsnsSignalTypePaths[accessibleIsn.IsnSlug],
 			}
-			logger.Debug().Msgf("accessibleIsn.IsnSlug %v value in latestSignalBatchIDs %v", accessibleIsn.IsnSlug, latestSignalBatchIDs[accessibleIsn.IsnSlug])
 		}
 	case "member":
 		// Member only has granted permissions (not service identites are always treated as members)
