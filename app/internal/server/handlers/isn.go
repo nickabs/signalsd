@@ -63,7 +63,8 @@ type IsnAndLinkedInfo struct {
 //	@Description	The only storage_type currently supported is "admin_db"
 //	@Description	when storage_type = "admin_db" the signalsd are stored in the relational database used by the API service to store the admin configuration
 //	@Description	Specify "admin_db" for storage_connection_url in this case (anything else is overriwtten with this value)
-//	@Descriptions	ISN admins automatically get write permission for their own sites, so this endpoint also starts a signals batch for them
+//	@Description	ISN admins automatically get write permission for their own sites, so this endpoint also starts a signals batch for them
+//	@Description	owners automatically get write permission on all isns, so start a batch for them too
 //	@Description
 //	@Description	This endpoint can only be used by the site owner or an admin
 //
@@ -134,6 +135,9 @@ func (i *IsnHandler) CreateIsnHandler(w http.ResponseWriter, r *http.Request) {
 	if *req.StorageType == "admin_db" {
 		*req.StorageConnectionURL = "admin_db"
 	}
+
+	// todo transaction
+
 	// create isn
 	returnedIsn, err := i.queries.CreateIsn(r.Context(), database.CreateIsnParams{
 		UserAccountID:        userAccountID,
@@ -149,10 +153,19 @@ func (i *IsnHandler) CreateIsnHandler(w http.ResponseWriter, r *http.Request) {
 		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not create ISN: %v", err))
 		return
 	}
-	// crete a signals batch
+	// crete a signals batch for the user creating the admin
 	returnedSignalBatch, err := i.queries.CreateSignalBatch(r.Context(), database.CreateSignalBatchParams{
 		IsnID:       returnedIsn.ID,
 		AccountID:   userAccountID,
+		AccountType: "user", // only users can use the isn config endpoints
+	})
+	if err != nil {
+		responses.RespondWithError(w, r, http.StatusInternalServerError, apperrors.ErrCodeDatabaseError, fmt.Sprintf("could not insert signal_batch: %v", err))
+		return
+	}
+
+	_, err = i.queries.CreateOwnerSignalBatch(r.Context(), database.CreateSignalBatchParams{
+		IsnID:       returnedIsn.ID,
 		AccountType: "user", // only users can use the isn config endpoints
 	})
 	if err != nil {

@@ -18,6 +18,27 @@ INSERT INTO signal_batches (
 )
 RETURNING *;
 
+-- create a batch for the owner on a new ISN created by an admin
+-- name: CreateOwnerSignalBatch :one
+INSERT INTO signal_batches (
+    id,
+    created_at,
+    updated_at,
+    isn_id,
+    account_id,
+    is_latest,
+    account_type
+) VALUES (
+    gen_random_uuid(), 
+    now(), 
+    now(), 
+    $1, 
+    (select id from users where role = 'owner'),
+    TRUE,
+    $2
+)
+RETURNING *;
+
 -- name: CloseISNSignalBatchByAccountID :execrows
 UPDATE signal_batches 
 SET is_latest = FALSE

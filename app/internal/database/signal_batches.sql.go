@@ -31,6 +31,48 @@ func (q *Queries) CloseISNSignalBatchByAccountID(ctx context.Context, arg CloseI
 	return result.RowsAffected()
 }
 
+const createOwnerSignalBatch = `-- name: CreateOwnerSignalBatch :one
+INSERT INTO signal_batches (
+    id,
+    created_at,
+    updated_at,
+    isn_id,
+    account_id,
+    is_latest,
+    account_type
+) VALUES (
+    gen_random_uuid(), 
+    now(), 
+    now(), 
+    $1, 
+    (select id from users where role = 'owner'),
+    TRUE,
+    $2
+)
+RETURNING id, created_at, updated_at, isn_id, account_id, is_latest, account_type
+`
+
+type CreateOwnerSignalBatchParams struct {
+	IsnID       uuid.UUID `json:"isn_id"`
+	AccountType string    `json:"account_type"`
+}
+
+// create a batch for the owner on a new ISN created by an admin
+func (q *Queries) CreateOwnerSignalBatch(ctx context.Context, arg CreateOwnerSignalBatchParams) (SignalBatch, error) {
+	row := q.db.QueryRowContext(ctx, createOwnerSignalBatch, arg.IsnID, arg.AccountType)
+	var i SignalBatch
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsnID,
+		&i.AccountID,
+		&i.IsLatest,
+		&i.AccountType,
+	)
+	return i, err
+}
+
 const createSignalBatch = `-- name: CreateSignalBatch :one
 INSERT INTO signal_batches (
     id,
