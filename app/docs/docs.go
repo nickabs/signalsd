@@ -126,6 +126,60 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/isn/": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAccessToken": []
+                    },
+                    {
+                        "RefreshTokenCookieAuth": []
+                    }
+                ],
+                "description": "Create an Information Sharing Network (ISN)\n\nvisibility = \"private\" means that signalsd on the network can only be seen by network participants.\n\nThe only storage_type currently supported is \"admin_db\"\nwhen storage_type = \"admin_db\" the signalsd are stored in the relational database used by the API service to store the admin configuration\nSpecify \"admin_db\" for storage_connection_url in this case (anything else is overriwtten with this value)\n\nThis endpoint can only be used by the site owner or an admin",
+                "tags": [
+                    "ISN config"
+                ],
+                "summary": "Create an ISN",
+                "parameters": [
+                    {
+                        "description": "ISN details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CreateIsnRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CreateIsnResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/isn/{isn_slug}": {
             "put": {
                 "security": [
@@ -169,58 +223,6 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/responses.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAccessToken": []
-                    },
-                    {
-                        "RefreshTokenCookieAuth": []
-                    }
-                ],
-                "description": "Create an Information Sharing Network (ISN)\n\nvisibility = \"private\" means that signalsd on the network can only be seen by network participants.\n\nThe only storage_type currently supported is \"admin_db\"\nwhen storage_type = \"admin_db\" the signalsd are stored in the relational database used by the API service to store the admin configuration\nSpecify \"admin_db\" for storage_connection_url in this case (anything else is overriwtten with this value)\n\nThis endpoint can only be used by the site owner or an admin",
-                "tags": [
-                    "ISN config"
-                ],
-                "summary": "Create an ISN",
-                "parameters": [
-                    {
-                        "description": "ISN details",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handlers.CreateIsnRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.CreateIsnResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.ErrorResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/responses.ErrorResponse"
                         }
@@ -917,7 +919,7 @@ const docTemplate = `{
         },
         "/auth/login": {
             "post": {
-                "description": "The response body includes an access token. A refresh token is included in a http-only cookie named refresh_token\nThe access_token is valid for 30 mins.\n\nUse the refresh_token with the /auth/refresh endpoint to renew the access_token.\n\nThe refresh_token lasts 30 days unless it is revoked earlier.\nTo renew the refresh_token, log in again.",
+                "description": "The response body includes an access token which can be used to access the protected enpoints, assuming the account has the appropriate permissions.\nThe access_token is valid for 30 mins.\n\nAs part of the login response, the server sets a http-only cookie on the client that will allow it to use the /auth/refresh endpoint to renew the access_token\nThe refresh_token lasts 30 days unless it is revoked earlier.\n\nThe account's role and permissions are encoded and encloded as part of the jwt access token and also provided in the response body\nTo renew the refresh_token, log in again.",
                 "tags": [
                     "auth"
                 ],
@@ -1096,7 +1098,7 @@ const docTemplate = `{
                         "BearerRefreshToken": []
                     }
                 ],
-                "description": "Use this endpoint to get a new access token.\n\nYou need to supply a vaild refresh token to use this API - if the refresh token has expired or been revoked the user must login again to get a new one.\n\nThe refresh token should be supplied in a http-only cookie called refresh_token.\n\nYou must also provide a previously issued bearer access token - it does not matter if it has expired\n(the token is not used to authenticate the request but is needed to establish the ID of the user making the request)\n\nNote this action automatically revokes the current refresh_token and issues a new one.\n\nThe new refresh token is sent in an http-only cookie named refresh_token.\nIn production deployments the secure flag (https only) on the cookie will be set to true\n\nAccess tokens expire after 30 mins and subsequent requests using the token will fail with an error_code of \"access_token_expired\"\n",
+                "description": "Use this endpoint to get a new access token.\n\nA vaild refresh token is needed to use this endpoint - if the refresh token has expired or been revoked the user must login again to get a new one.\nNew refresh tokens are sent as http-only cookies whenever the client uses this endpoint or logs in.\n\nThe browser handles refresh token cookies automatically, but you must provide your current access token in the Authorization header (the token is used only for user identification - expired tokens are accepted).\n\nEach successful refresh operation:\n- Invalidates the current refresh token\n- Issues a new refresh token via secure HTTP-only cookie\n- Returns a new access token in the response body\n\nthe new refresh token cookies is configured with:\n- HttpOnly - Prevents JavaScript access, reducing XSS risk\n- Secure - HTTPS (only in production environments)\n- SameSite=Lax -  preventing the use of cookie in third-party requests except for user-driven interactions.\n\nThe account's role and permissions are encoded and included as part of the jwt access token and also provided in the response body\n\nAccess tokens expire after 30 mins and subsequent requests using the token will fail with HTTP status 401 and an error_code of \"access_token_expired\"",
                 "tags": [
                     "auth"
                 ],
@@ -1304,7 +1306,7 @@ const docTemplate = `{
             "properties": {
                 "access_token": {
                     "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJTaWduYWxTZXJ2ZXIiLCJzdWIiOiI2OGZiNWY1Yi1lM2Y1LTRhOTYtOGQzNS1jZDIyMDNhMDZmNzMiLCJleHAiOjE3NDY3NzA2MzQsImlhdCI6MTc0Njc2NzAzNH0.3OdnUNgrvt1Zxs9AlLeaC9DVT6Xwc6uGvFQHb6nDfZs"
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJTaWduYWxzZCIsInN1YiI6ImMxMjQ1Yjc0LTMyMTQtNDUzOS04YTgyLTY2NDNkMzllNjk5YiIsImV4cCI6MTc0ODU4ODE2MiwiaWF0IjoxNzQ4NTg2MzYyLCJhY2NvdW50X2lkIjoiYzEyNDViNzQtMzIxNC00NTM5LThhODItNjY0M2QzOWU2OTliIiwiYWNjb3VudF90eXBlIjoidXNlciIsInJvbGUiOiJvd25lciIsImlzbl9wZXJtcyI6eyJzYW1wbGUtaXNuLS1leGFtcGxlLW9yZyI6eyJwZXJtaXNzaW9uIjoid3JpdGUiLCJzaWduYWxfdHlwZXMiOlsic2FtcGxlLXNpZ25hbC0tZXhhbXBsZS1vcmcvdjAuMC4xIiwic2FtcGxlLXNpZ25hbC0tZXhhbXBsZS1vcmcvdjAuMC4yIiwic2FtcGxlLXNpZ25hbC0tZXhhbXBsZS1vcmcvdjAuMC4zIiwic2FtcGxlLXNpZ25hbG5ldy0tZXhhbXBsZS1vcmcvdjAuMC4xIiwic2FtcGxlLXNpZ25hbC0tZXhhbXBsZS1vcmcvdjAuMC40Il19LCJzYW1wbGUtaXNuLS1zYXVsLW9yZyI6eyJwZXJtaXNzaW9uIjoid3JpdGUiLCJzaWduYWxfdHlwZXMiOlsic2FtcGxlLXNpZ25hbC0tc2F1bC1vcmcvdjAuMC4xIl19fX0.33ANor7XHWkB87npB4RWsJUjBnJHdYZce-lT8w_IN_s"
                 },
                 "account_id": {
                     "type": "string",
@@ -1360,7 +1362,11 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "type": "string"
-                    }
+                    },
+                    "example": [
+                        "signal-type-1/v0.0.1",
+                        "signal-type-2/v1.0.0"
+                    ]
                 }
             }
         },

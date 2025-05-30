@@ -35,7 +35,7 @@ func NewAuthService(secretKey string, environment string, queries *database.Quer
 }
 
 type AccessTokenResponse struct {
-	AccessToken string              `json:"access_token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJTaWduYWxTZXJ2ZXIiLCJzdWIiOiI2OGZiNWY1Yi1lM2Y1LTRhOTYtOGQzNS1jZDIyMDNhMDZmNzMiLCJleHAiOjE3NDY3NzA2MzQsImlhdCI6MTc0Njc2NzAzNH0.3OdnUNgrvt1Zxs9AlLeaC9DVT6Xwc6uGvFQHb6nDfZs"`
+	AccessToken string              `json:"access_token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJTaWduYWxzZCIsInN1YiI6ImMxMjQ1Yjc0LTMyMTQtNDUzOS04YTgyLTY2NDNkMzllNjk5YiIsImV4cCI6MTc0ODU4ODE2MiwiaWF0IjoxNzQ4NTg2MzYyLCJhY2NvdW50X2lkIjoiYzEyNDViNzQtMzIxNC00NTM5LThhODItNjY0M2QzOWU2OTliIiwiYWNjb3VudF90eXBlIjoidXNlciIsInJvbGUiOiJvd25lciIsImlzbl9wZXJtcyI6eyJzYW1wbGUtaXNuLS1leGFtcGxlLW9yZyI6eyJwZXJtaXNzaW9uIjoid3JpdGUiLCJzaWduYWxfdHlwZXMiOlsic2FtcGxlLXNpZ25hbC0tZXhhbXBsZS1vcmcvdjAuMC4xIiwic2FtcGxlLXNpZ25hbC0tZXhhbXBsZS1vcmcvdjAuMC4yIiwic2FtcGxlLXNpZ25hbC0tZXhhbXBsZS1vcmcvdjAuMC4zIiwic2FtcGxlLXNpZ25hbG5ldy0tZXhhbXBsZS1vcmcvdjAuMC4xIiwic2FtcGxlLXNpZ25hbC0tZXhhbXBsZS1vcmcvdjAuMC40Il19LCJzYW1wbGUtaXNuLS1zYXVsLW9yZyI6eyJwZXJtaXNzaW9uIjoid3JpdGUiLCJzaWduYWxfdHlwZXMiOlsic2FtcGxlLXNpZ25hbC0tc2F1bC1vcmcvdjAuMC4xIl19fX0.33ANor7XHWkB87npB4RWsJUjBnJHdYZce-lT8w_IN_s"`
 	TokenType   string              `json:"token_type" example:"Bearer"`
 	ExpiresIn   int                 `json:"expires_in" example:"1800"` //seconds
 	AccountID   uuid.UUID           `json:"account_id" example:"a38c99ed-c75c-4a4a-a901-c9485cf93cf3"`
@@ -46,7 +46,7 @@ type AccessTokenResponse struct {
 
 type IsnPerms struct {
 	Permission      string   `json:"permission" enums:"read,write" example:"read"`
-	SignalTypePaths []string `json:"signal_types,omitempty"` // list of available signal types for the isn
+	SignalTypePaths []string `json:"signal_types,omitempty" example:"signal-type-1/v0.0.1,signal-type-2/v1.0.0"` // list of available signal types for the isn
 }
 
 type AccessTokenClaims struct {
@@ -54,7 +54,7 @@ type AccessTokenClaims struct {
 	AccountID   uuid.UUID           `json:"account_id" example:"a38c99ed-c75c-4a4a-a901-c9485cf93cf3"`
 	AccountType string              `json:"account_type" enums:"user,service_identity"`
 	Role        string              `json:"role" enums:"owner,admin,member" example:"admin"`
-	IsnPerms    map[string]IsnPerms `json:"isn_perms,omitempty"` // todo - perms
+	IsnPerms    map[string]IsnPerms `json:"isn_perms,omitempty" example:"isn1"`
 }
 
 func (a AuthService) HashPassword(password string) (string, error) {
@@ -146,7 +146,7 @@ func (a AuthService) BuildAccessTokenResponse(ctx context.Context) (AccessTokenR
 
 		signalTypePaths := make([]string, 0)
 		for _, signalType := range signalTypeRows {
-			ver := fmt.Sprintf("%s/%s", signalType.Slug, signalType.SemVer)
+			ver := fmt.Sprintf("%s/v%s", signalType.Slug, signalType.SemVer)
 			signalTypePaths = append(signalTypePaths, ver)
 		}
 
